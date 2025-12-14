@@ -10,7 +10,7 @@ import { eq } from "drizzle-orm";
 // Make sure to implement a db instance singleton in src/db/index.ts first!
 // For now, I'll write this action assuming the db export exists.
 
-export async function createDeckAction() {
+export async function createDeckAction(formData: FormData) {
     const { userId } = await auth();
     const user = await currentUser();
 
@@ -29,11 +29,27 @@ export async function createDeckAction() {
         });
     }
 
+    // 0b. Parse Manifest File
+    const file = formData.get('manifest') as File;
+    if (!file) {
+        throw new Error("No manifest file provided");
+    }
+
+    const text = await file.text();
+    let manifestData;
+    try {
+        manifestData = JSON.parse(text);
+        if (!Array.isArray(manifestData)) throw new Error("Manifest must be an array");
+    } catch (e) {
+        console.error("Invalid JSON", e);
+        throw new Error("Invalid JSON manifest");
+    }
+
     // 1. Create Deck Record
     const [newDeck] = await db.insert(decks).values({
         userId: userId,
         status: 'generating',
-        name: `${user?.firstName || 'User'}'s Deck`
+        name: `${user?.firstName || 'User'}'s Deck (${new Date().toLocaleTimeString()})`
     }).returning();
 
     // 2. Trigger Generation (Async ideally, but sync for Vercel timeout limits? 
@@ -45,7 +61,7 @@ export async function createDeckAction() {
         const generatedCards = await generateDeck({
             deckId: newDeck.id,
             userId
-        });
+        }, manifestData);
 
         // 3. Save Cards to DB
         if (generatedCards && generatedCards.length > 0) {

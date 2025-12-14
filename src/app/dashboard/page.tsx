@@ -5,6 +5,7 @@ import { db } from '@/db';
 import { decks } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import styles from './dashboard.module.css';
+import UploadForm from './upload-form';
 
 export default async function DashboardPage() {
     const user = await currentUser();
@@ -22,11 +23,7 @@ export default async function DashboardPage() {
                     <h1>Dashboard</h1>
                     <p className={styles.welcome}>Ready to close deals, {user?.firstName || 'Agent'}?</p>
                 </div>
-                <form action={createDeckAction}>
-                    <button type="submit" className={styles.new_deck_btn}>
-                        + Generate New Deck
-                    </button>
-                </form>
+                <UploadForm />
             </div>
 
             <div className={styles.grid}>

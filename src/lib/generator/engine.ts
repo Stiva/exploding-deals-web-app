@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { put } from '@vercel/blob';
-import manifestData from '@/data/deck_manifest.json';
 
 
 // Font loading
@@ -22,14 +21,10 @@ interface CardManifestItem {
     count: number;
 }
 
-export async function generateDeck(options: GenerateOptions) {
-    // Load Manifest - Imported directly to ensure bundling
-    // const manifestPath = path.resolve('../deck_manifest.json'); 
-    // We use the imported manifest constant.
+export async function generateDeck(options: GenerateOptions, manifest: CardManifestItem[]) {
+    // Manifest is now passed from the Server Action (uploaded file)
 
     const generatedCards = [];
-
-    const manifest = manifestData as CardManifestItem[];
 
     for (const item of manifest) {
 
