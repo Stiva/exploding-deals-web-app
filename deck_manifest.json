@@ -1,0 +1,65 @@
+[
+    {
+        "id": "c_exploding_kitten_01",
+        "mechanic_id": "GAME_OVER",
+        "name": "Esplosione Imminente",
+        "flavor_text": "Purtroppo hai tirato troppo la corda. BOOM.",
+        "count": 4
+    },
+    {
+        "id": "c_defuse_01",
+        "mechanic_id": "SAVE_LIFE",
+        "name": "Disinnesco",
+        "flavor_text": "Salva la tua pelle grazie a un kit di sopravvivenza aziendale.",
+        "count": 6
+    },
+    {
+        "id": "c_attack_01",
+        "mechanic_id": "ATTACK_2X",
+        "name": "Attacco Frontale",
+        "flavor_text": "Non tocca a te, tocca a lui. Due volte.",
+        "count": 4
+    },
+    {
+        "id": "c_skip_01",
+        "mechanic_id": "SKIP_1X",
+        "name": "Saltaturno",
+        "flavor_text": "Oggi non ho voglia. Passiamo oltre.",
+        "count": 4
+    },
+    {
+        "id": "c_favor_01",
+        "mechanic_id": "STEAL_CHOSEN",
+        "name": "Favore",
+        "flavor_text": "Dammi quella carta. Subito.",
+        "count": 4
+    },
+    {
+        "id": "c_shuffle_01",
+        "mechanic_id": "SHUFFLE",
+        "name": "Mescolata",
+        "flavor_text": "Rimescola le carte in tavola. Il destino cambia.",
+        "count": 4
+    },
+    {
+        "id": "c_see_future_01",
+        "mechanic_id": "PEEK_3",
+        "name": "Preveggenza",
+        "flavor_text": "Vedi il futuro prima che ti colpisca in faccia.",
+        "count": 5
+    },
+    {
+        "id": "c_nope_01",
+        "mechanic_id": "CANCEL",
+        "name": "Niet",
+        "flavor_text": "Assolutamente no. Scordatelo.",
+        "count": 5
+    },
+    {
+        "id": "c_cat_taco_01",
+        "mechanic_id": "VANILLA",
+        "name": "Gatto Taco",
+        "flavor_text": "È un gatto. È un taco. È palindromo.",
+        "count": 4
+    }
+]
