@@ -2,10 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { put } from '@vercel/blob';
+import manifestData from '@/data/deck_manifest.json';
+
 
 // Font loading
-const FONT_PATH = path.join(process.cwd(), 'assets', 'BebasNeue-Regular.ttf');
-const TEMPLATE_PATH = path.join(process.cwd(), 'assets', 'card_template.png');
+const FONT_PATH = path.join(process.cwd(), 'public', 'assets', 'BebasNeue-Regular.ttf');
+const TEMPLATE_PATH = path.join(process.cwd(), 'public', 'assets', 'card_template.png');
 
 interface GenerateOptions {
     deckId: number;
@@ -21,28 +23,16 @@ interface CardManifestItem {
 }
 
 export async function generateDeck(options: GenerateOptions) {
-    // Load Manifest (assuming it's in the root of the workspace, passed as context, or copied to app)
-    // For this implementation, we read from the workspace root relative to cwd? 
-    // Or assuming it was moved to the project. Let's assume we read from the known path or a passed-in manifest.
-    // We'll read from strict path for now as per "Context7 MCP".
-    const manifestPath = path.resolve('../deck_manifest.json'); // Trying to reach out of project or assuming copy.
-    // Safest: Read from where we created it. 
-    // Note: Vercel server might not have access outside usage. Ideally manifest is in project.
-    // We will assume it's copied or read from a local constant if not found.
-
-    let manifest: CardManifestItem[] = [];
-    try {
-        const raw = fs.readFileSync(manifestPath, 'utf-8');
-        manifest = JSON.parse(raw);
-    } catch (e) {
-        console.error("Manifest not found at " + manifestPath, e);
-        // Fallback or duplicate logic
-        return;
-    }
+    // Load Manifest - Imported directly to ensure bundling
+    // const manifestPath = path.resolve('../deck_manifest.json'); 
+    // We use the imported manifest constant.
 
     const generatedCards = [];
 
+    const manifest = manifestData as CardManifestItem[];
+
     for (const item of manifest) {
+
         // Generate Graphic
         // 1. Simulate "Nano Banana Pro" -> Getting consistent style image
         // For now: Just a solid color or noise with the mechanic color.
