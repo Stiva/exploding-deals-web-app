@@ -63,12 +63,16 @@ export default async function LibraryPage({
                         {deckCards.map(card => (
                             <div key={card.id} className={styles.card_item}>
                                 {card.imageUrl ? (
-                                    <Image
-                                        src={card.imageUrl}
-                                        alt={card.name}
-                                        fill
-                                        style={{ objectFit: 'cover' }}
-                                    />
+                                    <>
+                                        <p className={styles.debug_url} style={{ display: 'none' }}>{card.imageUrl}</p>
+                                        <Image
+                                            src={card.imageUrl}
+                                            alt={card.name}
+                                            fill
+                                            unoptimized
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                    </>
                                 ) : (
                                     <div className={styles.modal_processing}>Processing...</div>
                                 )}
