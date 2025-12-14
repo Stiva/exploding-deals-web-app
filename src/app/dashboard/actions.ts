@@ -2,7 +2,7 @@
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/db"; // We need to export db instance
-import { decks, cards } from "@/db/schema";
+import { decks, cards, users } from "@/db/schema";
 import { generateDeck } from "@/lib/generator/engine";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
@@ -16,6 +16,17 @@ export async function createDeckAction() {
 
     if (!userId) {
         throw new Error("Unauthorized");
+    }
+
+    // 0. Ensure User Exists (Lazy Sync)
+    // We need the user in our DB to satisfy the FK constraint for Decks.
+    const [existingUser] = await db.select().from(users).where(eq(users.id, userId));
+
+    if (!existingUser) {
+        await db.insert(users).values({
+            id: userId,
+            email: user?.emailAddresses[0]?.emailAddress || 'no-email',
+        });
     }
 
     // 1. Create Deck Record
