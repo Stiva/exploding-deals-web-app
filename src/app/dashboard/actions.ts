@@ -36,10 +36,28 @@ export async function createDeckAction(formData: FormData) {
     }
 
     const text = await file.text();
-    let manifestData;
+    let manifestData: any;
+    let finalManifest: any[] = [];
+
     try {
-        manifestData = JSON.parse(text);
-        if (!Array.isArray(manifestData)) throw new Error("Manifest must be an array");
+        const json = JSON.parse(text);
+
+        // Handle User's specific JSON structure (Object with cards array)
+        if (!Array.isArray(json) && json.cards && Array.isArray(json.cards)) {
+            finalManifest = json.cards.map((c: any) => ({
+                id: c.card_id,
+                mechanic_id: c.mechanic_id,
+                name: c.metadata?.display_name || 'Unknown Card',
+                flavor_text: c.metadata?.flavor_text || '',
+                count: 1 // Default to 1
+            }));
+        }
+        // Handle direct array (legacy/internal format)
+        else if (Array.isArray(json)) {
+            finalManifest = json;
+        } else {
+            throw new Error("Invalid JSON structure: Must be an array or object with 'cards' array");
+        }
     } catch (e) {
         console.error("Invalid JSON", e);
         throw new Error("Invalid JSON manifest");
@@ -52,16 +70,12 @@ export async function createDeckAction(formData: FormData) {
         name: `${user?.firstName || 'User'}'s Deck (${new Date().toLocaleTimeString()})`
     }).returning();
 
-    // 2. Trigger Generation (Async ideally, but sync for Vercel timeout limits? 
-    // If generation is slow, Vercel Serverless might timeout (10s-60s limit). 
-    // For MVP, we run it sync. If too slow, move to Inngest or specialized worker.
-    // engine.ts uses Sharp which is fast. Uploading 50 cards might take time.
-
+    // 2. Trigger Generation
     try {
         const generatedCards = await generateDeck({
             deckId: newDeck.id,
             userId
-        }, manifestData);
+        }, finalManifest);
 
         // 3. Save Cards to DB
         if (generatedCards && generatedCards.length > 0) {
