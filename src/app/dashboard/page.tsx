@@ -6,6 +6,7 @@ import { decks } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import styles from './dashboard.module.css';
 import UploadForm from './upload-form';
+import DeleteDeckButton from './delete-deck-button';
 
 export default async function DashboardPage() {
     const user = await currentUser();
