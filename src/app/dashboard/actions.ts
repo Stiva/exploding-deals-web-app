@@ -12,21 +12,40 @@ import { eq } from "drizzle-orm";
 
 export async function createDeckAction(formData: FormData) {
     const { userId } = await auth();
-    const user = await currentUser();
+    const user = await currentUser(); // Fetch full user details from Clerk
 
     if (!userId) {
         throw new Error("Unauthorized");
     }
 
-    // 0. Ensure User Exists (Lazy Sync)
-    // We need the user in our DB to satisfy the FK constraint for Decks.
-    const [existingUser] = await db.select().from(users).where(eq(users.id, userId));
+    // 0a. Lazy Sync User & Auth Check
+    const existingUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    let dbUser = existingUser[0];
 
-    if (!existingUser) {
-        await db.insert(users).values({
+    // Auto-approve Logic
+    const isSuperAdminEmail = user?.emailAddresses?.some(e => e.emailAddress === 'fstivani@gmail.com');
+
+    if (!dbUser) {
+        // Create new user
+        const [newUser] = await db.insert(users).values({
             id: userId,
-            email: user?.emailAddresses[0]?.emailAddress || 'no-email',
-        });
+            email: user?.primaryEmailAddress?.emailAddress || 'unknown',
+            isAdmin: isSuperAdminEmail || false,
+            isApproved: isSuperAdminEmail || false
+        }).returning();
+        dbUser = newUser;
+    } else if (isSuperAdminEmail && (!dbUser.isAdmin || !dbUser.isApproved)) {
+        // Self-heal super admin if needed
+        const [updatedUser] = await db.update(users)
+            .set({ isAdmin: true, isApproved: true })
+            .where(eq(users.id, userId))
+            .returning();
+        dbUser = updatedUser;
+    }
+
+    // Permission Gate
+    if (!dbUser.isApproved) {
+        throw new Error("Account pending approval. Please contact an administrator.");
     }
 
     // 0b. Parse Manifest File
@@ -83,30 +102,45 @@ export async function createDeckAction(formData: FormData) {
 
         // 3. Save Cards to DB
         if (generatedCards && generatedCards.length > 0) {
-            await db.insert(cards).values(
-                generatedCards.map(c => ({
-                    deckId: newDeck.id,
-                    mechanicId: c.mechanic_id,
-                    name: c.name,
-                    flavorText: c.flavor_text || '',
-                    imageUrl: c.imageUrl
-                }))
-            );
+            await db.insert(cards).values(generatedCards.map(c => ({
+                deckId: newDeck.id,
+                mechanicId: c.mechanic_id,
+                name: c.name,
+                flavorText: c.flavor_text,
+                imageUrl: c.imageUrl
+            })));
         }
 
-        // 4. Update Status
-        await db.update(decks)
-            .set({ status: 'completed' })
-            .where(eq(decks.id, newDeck.id));
+        // 4. Update Deck Status
+        await db.update(decks).set({ status: 'completed' }).where(eq(decks.id, newDeck.id));
 
-    } catch (e) {
-        console.error("Deck Gen Error", e);
-        await db.update(decks)
-            .set({ status: 'failed' })
-            .where(eq(decks.id, newDeck.id));
-        throw e;
+    } catch (error) {
+        console.error("Deck Generation Failed", error);
+        await db.update(decks).set({ status: 'failed' }).where(eq(decks.id, newDeck.id));
+        throw error; // Re-throw so client knows
     }
 
     revalidatePath('/dashboard');
-    // return { success: true, deckId: newDeck.id }; // Removed to satisfy form action void return
+    return { success: true, deckId: newDeck.id };
+}
+
+export async function deleteDeckAction(deckId: number) {
+    const { userId } = await auth();
+    if (!userId) {
+        throw new Error("Unauthorized");
+    }
+
+    // Verify ownership or admin
+    const deck = await db.select().from(decks).where(eq(decks.id, deckId)).limit(1);
+    if (!deck || deck.length === 0) {
+        throw new Error("Deck not found");
+    }
+
+    if (deck[0].userId !== userId) {
+        // Technically Admin could delete, but let's stick to owner for now unless requested
+        throw new Error("Unauthorized");
+    }
+
+    await db.delete(decks).where(eq(decks.id, deckId));
+    revalidatePath('/dashboard');
 }

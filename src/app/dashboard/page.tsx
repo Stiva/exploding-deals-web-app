@@ -47,6 +47,7 @@ export default async function DashboardPage() {
                                         <span className={`${styles.status_badge} ${statusClass}`}>
                                             {deck.status}
                                         </span>
+                                        <DeleteDeckButton deckId={deck.id} />
                                     </div>
                                     <p className={styles.meta}>Created: {deck.createdAt.toLocaleDateString()}</p>
                                 </div>

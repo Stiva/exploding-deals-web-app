@@ -1,10 +1,12 @@
-import { pgTable, serial, text, timestamp, integer, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, pgEnum, boolean } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum('status', ['generating', 'completed', 'failed']);
 
 export const users = pgTable('users', {
     id: text('id').primaryKey(), // Clerk ID
     email: text('email').notNull(),
+    isAdmin: boolean('is_admin').default(false).notNull(),
+    isApproved: boolean('is_approved').default(false).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -18,7 +20,7 @@ export const decks = pgTable('decks', {
 
 export const cards = pgTable('cards', {
     id: serial('id').primaryKey(),
-    deckId: integer('deck_id').references(() => decks.id).notNull(),
+    deckId: integer('deck_id').references(() => decks.id, { onDelete: 'cascade' }).notNull(),
     mechanicId: text('mechanic_id').notNull(),
     imageUrl: text('image_url'),
     name: text('name').notNull(),
