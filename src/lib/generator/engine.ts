@@ -12,6 +12,7 @@ const TEMPLATE_PATH = path.join(process.cwd(), 'public', 'assets', 'card_templat
 interface GenerateOptions {
     deckId: number;
     userId: string;
+    model?: string;
 }
 
 interface CardManifestItem {
@@ -58,7 +59,7 @@ export async function generateDeck(options: GenerateOptions, manifest: CardManif
             console.log("Generating with Nano Banana API...");
         }
 
-        const cardImageBuffer = await createCardImage(item, baseColor);
+        const cardImageBuffer = await createCardImage(item, baseColor, options.model);
 
         // 3. Upload to Blob
         const blob = await put(`decks/${options.deckId}/${item.id}.png`, cardImageBuffer, {
@@ -74,7 +75,7 @@ export async function generateDeck(options: GenerateOptions, manifest: CardManif
     return generatedCards;
 }
 
-async function createCardImage(item: CardManifestItem, colorHex: string): Promise<Buffer> {
+async function createCardImage(item: CardManifestItem, colorHex: string, model: string = "gemini-2.5-flash-image"): Promise<Buffer> {
     // Basic Geometry from specs
     // Header Top 15%
     // Art Middle 50%
@@ -115,8 +116,8 @@ async function createCardImage(item: CardManifestItem, colorHex: string): Promis
 
     try {
         if (item.image_prompt) {
-            console.log(`Generating image for ${item.name}...`);
-            artLayer = await generateCardImage(item.image_prompt);
+            console.log(`Generating image for ${item.name} using ${model}...`);
+            artLayer = await generateCardImage(item.image_prompt, model);
             // Resize generated image to fit the 500x500 slot if needed
             artLayer = await sharp(artLayer).resize(500, 500).toBuffer();
         } else {

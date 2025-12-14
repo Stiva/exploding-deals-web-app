@@ -72,10 +72,13 @@ export async function createDeckAction(formData: FormData) {
     }).returning();
 
     // 2. Trigger Generation
+    const model = formData.get('model') as string || 'gemini-2.5-flash-image';
+
     try {
         const generatedCards = await generateDeck({
             deckId: newDeck.id,
-            userId
+            userId,
+            model
         }, finalManifest);
 
         // 3. Save Cards to DB

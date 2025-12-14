@@ -90,11 +90,18 @@ export default function UploadForm() {
                 </div>
             )}
 
-            {/* 3. Confirm Action */}
+            {/* 3. Model Selection & Confirm Action */}
             {stats && !isPending && (
-                <button type="submit" className={styles.generate_confirm_btn}>
-                    🚀 Generate {stats.count} Cards
-                </button>
+                <div className={styles.action_row}>
+                    <select name="model" className={styles.model_select} defaultValue="gemini-2.5-flash-image">
+                        <option value="gemini-2.5-flash-image">Gemini 2.5 Flash (Fast & Cheap)</option>
+                        <option value="gemini-3.0-pro">Gemini 3.0 Pro (High Quality)</option>
+                    </select>
+
+                    <button type="submit" className={styles.generate_confirm_btn}>
+                        🚀 Generate {stats.count} Cards
+                    </button>
+                </div>
             )}
 
             {/* 4. Progress State */}

@@ -4,15 +4,18 @@ import { GoogleGenAI } from "@google/genai";
 // Note: process.env.GOOGLE_API_KEY must be set
 const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
-export async function generateCardImage(userPrompt: string): Promise<Buffer> {
+export async function generateCardImage(userPrompt: string, model: string = "gemini-2.5-flash-image"): Promise<Buffer> {
     // 1. Construct the Enforced Style Prompt
     const styleModifier = "Style of The Oatmeal, crude vector illustration, thick messy black outlines, flat colors, white background, minimalist, high contrast, corporate satire theme";
     const finalPrompt = `${userPrompt}. ${styleModifier}`;
 
     try {
         // 2. Call Google Gemini Model
+        const selectedModel = model || process.env.GOOGLE_GEN_MODEL || "gemini-2.5-flash-image";
+
+        // Using 002 for pro-preview if that's the intention, or just passing string
         const response = await genAI.models.generateContent({
-            model: process.env.GOOGLE_GEN_MODEL || "gemini-2.5-flash-image",
+            model: selectedModel,
             contents: [
                 {
                     parts: [
