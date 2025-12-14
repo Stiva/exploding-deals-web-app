@@ -63,5 +63,5 @@ export async function createDeckAction() {
     }
 
     revalidatePath('/dashboard');
-    return { success: true, deckId: newDeck.id };
+    // return { success: true, deckId: newDeck.id }; // Removed to satisfy form action void return
 }
