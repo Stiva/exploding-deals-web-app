@@ -1,0 +1,131 @@
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 280px;
+    background: var(--surface);
+    border-right: 1px solid #333;
+    padding: 2rem;
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        display: block;
+    }
+}
+
+.sidebar_title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+}
+
+.deck_list {
+    list-style: none;
+    padding: 0;
+}
+
+.deck_link {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    color: #888;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.deck_link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--foreground);
+}
+
+.deck_link_active {
+    background: var(--primary);
+    color: white;
+}
+
+.main {
+    flex: 1;
+    padding: 2rem;
+}
+
+.header {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.deck_title {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.status_pill {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    background: #333;
+    color: #999;
+}
+
+.card_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.card_item {
+    position: relative;
+    aspect-ratio: 3/4;
+    background: #222;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #333;
+    transition: transform 0.2s;
+}
+
+.card_item:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+}
+
+.card_content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent);
+    transform: translateY(100%);
+    transition: transform 0.2s;
+}
+
+.card_item:hover .card_content {
+    transform: translateY(0);
+}
+
+.card_name {
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.card_text {
+    font-size: 0.8rem;
+    color: #ccc;
+    line-height: 1.4;
+}
+
+.modal_processing {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #555;
+    font-size: 0.9rem;
+}

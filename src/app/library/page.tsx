@@ -4,6 +4,7 @@ import { eq, desc } from 'drizzle-orm';
 import { currentUser } from '@clerk/nextjs/server';
 import Link from 'next/link';
 import Image from 'next/image';
+import styles from './library.module.css';
 
 export default async function LibraryPage({
     searchParams,
@@ -11,10 +12,6 @@ export default async function LibraryPage({
     searchParams: { [key: string]: string | string[] | undefined }
 }) {
     const user = await currentUser();
-    // Assuming searchParams is just a promise in older versions, or object in later. 
-    // Next 15+ searchParams is async. Next 14 is object.
-    // Spec says Next 14+. Let's treat it as props.
-    // Safest access.
     const deckIdParam = searchParams?.deckId;
 
     // Fetch all user decks for the sidebar/filter
@@ -27,57 +24,57 @@ export default async function LibraryPage({
     const selectedDeck = userDecks.find(d => d.id === selectedDeckId);
 
     return (
-        <div className="flex min-h-screen">
+        <div className={styles.layout}>
             {/* Sidebar */}
-            <aside className="w-64 bg-gray-50 border-r p-6 hidden md:block">
-                <h2 className="font-bold text-lg mb-4">My Decks</h2>
-                <ul className="space-y-2">
+            <aside className={styles.sidebar}>
+                <h2 className={styles.sidebar_title}>My Decks</h2>
+                <ul className={styles.deck_list}>
                     {userDecks.map(deck => (
                         <li key={deck.id}>
                             <Link
                                 href={`/library?deckId=${deck.id}`}
-                                className={`block px-4 py-2 rounded-lg ${selectedDeckId === deck.id ? 'bg-blue-100 text-blue-800 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
+                                className={`${styles.deck_link} ${selectedDeckId === deck.id ? styles.deck_link_active : ''}`}
                             >
                                 {deck.name}
                             </Link>
                         </li>
                     ))}
                 </ul>
-                <div className="mt-8 border-t pt-4">
-                    <Link href="/dashboard" className="text-sm text-gray-500 hover:text-black">&larr; Back to Dashboard</Link>
+                <div style={{ marginTop: '2rem', borderTop: '1px solid #333', paddingTop: '1rem' }}>
+                    <Link href="/dashboard" style={{ fontSize: '0.9rem', color: '#666' }}>&larr; Back to Dashboard</Link>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold flex items-center gap-4">
+            <main className={styles.main}>
+                <div className={styles.header}>
+                    <h1 className={styles.deck_title}>
                         {selectedDeck?.name || 'Library'}
-                        {selectedDeck && <span className="text-sm px-3 py-1 bg-gray-100 rounded-full font-normal text-gray-500">{selectedDeck?.status}</span>}
                     </h1>
+                    {selectedDeck && <span className={styles.status_pill}>{selectedDeck?.status}</span>}
                 </div>
 
                 {deckCards.length === 0 ? (
-                    <div className="text-center text-gray-500 mt-20">
+                    <div style={{ textAlign: 'center', color: '#666', marginTop: '5rem' }}>
                         <p>No cards found in this deck.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className={styles.card_grid}>
                         {deckCards.map(card => (
-                            <div key={card.id} className="group relative aspect-[3/4] bg-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition">
+                            <div key={card.id} className={styles.card_item}>
                                 {card.imageUrl ? (
                                     <Image
                                         src={card.imageUrl}
                                         alt={card.name}
                                         fill
-                                        className="object-cover"
+                                        style={{ objectFit: 'cover' }}
                                     />
                                 ) : (
-                                    <div className="flex items-center justify-center h-full text-gray-400">Processing...</div>
+                                    <div className={styles.modal_processing}>Processing...</div>
                                 )}
-                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform">
-                                    <p className="text-white font-bold">{card.name}</p>
-                                    <p className="text-white/80 text-xs line-clamp-2">{card.flavorText}</p>
+                                <div className={styles.card_content}>
+                                    <p className={styles.card_name}>{card.name}</p>
+                                    <p className={styles.card_text}>{card.flavorText}</p>
                                 </div>
                             </div>
                         ))}
