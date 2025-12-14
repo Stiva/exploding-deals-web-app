@@ -81,10 +81,18 @@ async function createCardImage(item: CardManifestItem, colorHex: string): Promis
     const width = 750;
     const height = 1050; // Standard Poker 300dpi approx
 
+    // Load font and convert to base64 to embed in SVG (avoids fontconfig dependency)
+    const fontBuffer = fs.readFileSync(FONT_PATH);
+    const fontBase64 = fontBuffer.toString('base64');
+
     const svgText = `
     <svg width="${width}" height="${height}">
         <style>
-        .title { fill: white; font-family: 'Bebas Neue'; font-size: 80px; font-weight: bold; anchor: middle; }
+        @font-face {
+            font-family: 'Bebas Neue';
+            src: url(data:font/ttf;base64,${fontBase64});
+        }
+        .title { fill: white; font-family: 'Bebas Neue', sans-serif; font-size: 80px; font-weight: bold; anchor: middle; }
         .flavor { fill: black; font-family: sans-serif; font-size: 32px; }
         </style>
         <text x="50%" y="12%" text-anchor="middle" class="title">${item.name.toUpperCase()}</text>
