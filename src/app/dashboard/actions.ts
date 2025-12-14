@@ -49,6 +49,7 @@ export async function createDeckAction(formData: FormData) {
                 mechanic_id: c.mechanic_id,
                 name: c.metadata?.display_name || 'Unknown Card',
                 flavor_text: c.metadata?.flavor_text || '',
+                image_prompt: c.metadata?.image_prompt || c.metadata?.display_name + " in style of The Oatmeal",
                 count: 1 // Default to 1
             }));
         }

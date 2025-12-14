@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { put } from '@vercel/blob';
+import { generateCardImage } from '@/lib/services/image-gen';
 
 
 // Font loading
@@ -18,6 +19,7 @@ interface CardManifestItem {
     mechanic_id: string;
     name: string;
     flavor_text: string;
+    image_prompt?: string;
     count: number;
 }
 
@@ -48,6 +50,14 @@ export async function generateDeck(options: GenerateOptions, manifest: CardManif
         const baseColor = colorMap[item.mechanic_id] || '#FFFFFF';
 
         // 2. Composite with Sharp
+        // Placeholder for Real API Call
+        const apiKey = process.env.NANO_BANANA_API_KEY;
+        if (!apiKey) {
+            console.warn("NANO_BANANA_API_KEY is missing. Using local simulation.");
+        } else {
+            console.log("Generating with Nano Banana API...");
+        }
+
         const cardImageBuffer = await createCardImage(item, baseColor);
 
         // 3. Upload to Blob
@@ -100,15 +110,31 @@ async function createCardImage(item: CardManifestItem, colorHex: string): Promis
     </svg>
     `;
 
-    // Create base art layer (simulated generation)
-    const artLayer = await sharp({
-        create: {
-            width: 500,
-            height: 500,
-            channels: 4,
-            background: colorHex
+    // Create base art layer
+    let artLayer: Buffer;
+
+    try {
+        if (item.image_prompt) {
+            console.log(`Generating image for ${item.name}...`);
+            artLayer = await generateCardImage(item.image_prompt);
+            // Resize generated image to fit the 500x500 slot if needed
+            artLayer = await sharp(artLayer).resize(500, 500).toBuffer();
+        } else {
+            throw new Error("No image prompt");
         }
-    }).png().toBuffer();
+    } catch (e) {
+        console.error(`Failed to generate image for ${item.name}:`, e);
+        // Fallback: Solid Color + Mechanic Icon/Text maybe? 
+        // For now: Solid Color
+        artLayer = await sharp({
+            create: {
+                width: 500,
+                height: 500,
+                channels: 4,
+                background: colorHex
+            }
+        }).png().toBuffer();
+    }
 
     // Composite
     // Layer 0: Template Background (if template has transparency in middle? 
